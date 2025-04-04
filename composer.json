@@ -1,6 +1,6 @@
 {
     "name": "synaptic4u/logging",
-    "version": "1.0.1",
+    "version": "1.5",
     "description": "Custom logging class able to log to files and database",
     "type": "library",
     "keywords": ["mysql"],
