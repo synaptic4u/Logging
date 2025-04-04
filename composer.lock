@@ -1,0 +1,79 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "7614c4af4a4f30f30246e59606e8fac4",
+    "packages": [
+        {
+            "name": "synaptic4u/db",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/synaptic4u/DB.git",
+                "reference": "a0297ba9a46bf77692fdae11f395b6de0471601c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/synaptic4u/DB/zipball/a0297ba9a46bf77692fdae11f395b6de0471601c",
+                "reference": "a0297ba9a46bf77692fdae11f395b6de0471601c",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pdo": "*",
+                "php": ">=7.4"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Synaptic4U\\": "./src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Emile De Wilde",
+                    "email": "synaptic4u@gmail.com",
+                    "homepage": "https://github.com/synaptic4u/db",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Database wrapper class for PDO MYSQL to enable custom scripting",
+            "homepage": "https://github.com/synaptic4u",
+            "keywords": [
+                "mysql"
+            ],
+            "support": {
+                "email": "synaptic4u@gmail.com",
+                "issues": "https://github.com/synaptic4u/DB/issues",
+                "source": "https://github.com/synaptic4u/DB/tree/master"
+            },
+            "funding": [
+                {
+                    "url": "https://www.patreon.com/synaptic4u",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2025-04-03T13:00:06+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "synaptic4u/db": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=7.4",
+        "ext-pdo": "*"
+    },
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
+}

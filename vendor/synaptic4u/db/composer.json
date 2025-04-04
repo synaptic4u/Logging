@@ -1,17 +1,16 @@
 {
-    "name": "synaptic4u/logging",
-    "description": "Custom logging class able to log to files and database",
+    "name": "synaptic4u/db",
+    "description": "Database wrapper class for PDO MYSQL to enable custom scripting",
     "type": "library",
     "keywords": ["mysql"],
-    "homepage": "https://github.com/synaptic4u/",
+    "homepage": "https://github.com/synaptic4u",
     "require": {
-        "synaptic4u/db": "dev-master",
         "php": ">=7.4",
         "ext-pdo": "*"
     },
     "autoload": {
         "psr-4": {
-            "Synaptic4U\\": ["./src", "./vendor/synaptic4u/db/src"]
+            "Synaptic4U\\": "./src"
         }
     },
     "license": "MIT",
@@ -19,7 +18,7 @@
         {
             "name": "Emile De Wilde",
             "email": "synaptic4u@gmail.com",
-            "homepage": "https://github.com/synaptic4u/logging",
+            "homepage": "https://github.com/synaptic4u/db",
             "role": "Developer"
         }
     ],
