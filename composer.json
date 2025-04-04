@@ -5,7 +5,7 @@
     "keywords": ["mysql"],
     "homepage": "https://github.com/synaptic4u/",
     "require": {
-        "synaptic4u/db": "dev-master",
+        "synaptic4u/db": "1.0.0",
         "php": ">=7.4",
         "ext-pdo": "*"
     },
