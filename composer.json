@@ -10,7 +10,7 @@
     "homepage": "https://github.com/synaptic4u/",
    
     "require": {
-        "synaptic4u/db": "^1",
+        "synaptic4u/db": "^1.2.0",
         "php": ">=7.4",
         "ext-pdo": "*"
     },
