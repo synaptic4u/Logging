@@ -8,6 +8,7 @@
         "database"
     ],
     "homepage": "https://github.com/synaptic4u/",
+    "version": "1.3",
     "require": {
         "synaptic4u/db": "^1",
         "php": ">=7.4",
