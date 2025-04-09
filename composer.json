@@ -3,34 +3,48 @@
     "version": "1.2",
     "description": "Custom logging class able to log to files and database",
     "type": "library",
-    "keywords": ["mysql"],
+    "keywords": [
+      "mysql",
+      "logging",
+      "database"
+    ],
     "homepage": "https://github.com/synaptic4u/",
     "require": {
-        "synaptic4u/db": ">=1.0.1",
-        "php": ">=7.4",
-        "ext-pdo": "*"
+      "synaptic4u/db": "^1.0.1",
+      "php": "^7.4",
+      "ext-pdo": "*"
     },
     "autoload": {
-        "psr-4": {
-            "Synaptic4U\\": ["src"]
-        }
+      "psr-4": {
+        "Synaptic4U\\": "src/"
+      }
+    },
+    "scripts": {
+      "post-install-cmd": [
+        "@create-logs-dir"
+      ],
+      "create-logs-dir": [
+        "[ -d logs ] || mkdir -p logs",
+        "chmod 775 logs"
+      ]
     },
     "license": "MIT",
     "authors": [
-        {
-            "name": "Emile De Wilde",
-            "email": "synaptic4u@gmail.com",
-            "homepage": "https://github.com/synaptic4u/logging",
-            "role": "Developer"
-        }
+      {
+        "name": "Emile De Wilde",
+        "email": "synaptic4u@gmail.com",
+        "homepage": "https://github.com/synaptic4u/logging",
+        "role": "Developer"
+      }
     ],
     "support": {
-        "email": "synaptic4u@gmail.com"
-    }, 
+      "email": "synaptic4u@gmail.com"
+    },
     "funding": [
-        {
-            "type": "patreon",
-            "url": "https://www.patreon.com/synaptic4u"
-        }
+      {
+        "type": "patreon",
+        "url": "https://www.patreon.com/synaptic4u"
+      }
     ]
-}
+  }
+  

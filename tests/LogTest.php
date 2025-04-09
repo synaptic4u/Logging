@@ -13,3 +13,10 @@ if (file_exists(dirname(__FILE__,4) . '/autoload.php')) {
     // var_dump(dirname(__FILE__, 2).'/vendor/autoload.php');
 }
 
+use Synaptic4U\Log\Log;
+
+try {
+    new Log("This is a test to default activity file.");
+} catch (Exception $e) {
+    echo "There's a error: ". $e->getMessage() ."";
+}
