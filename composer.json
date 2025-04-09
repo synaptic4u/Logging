@@ -1,45 +1,47 @@
 {
-    "name": "synaptic4u/logging",
-    "description": "Custom logging class able to log to files and database",
-    "type": "library",
-    "keywords": [
-        "mysql",
-        "logging",
-        "database"
+  "name": "synaptic4u/logging",
+  "description": "Custom logging class able to log to files and database",
+  "type": "library",
+  "keywords": [
+    "mysql",
+    "logging",
+    "database"
+  ],
+  "homepage": "https://github.com/synaptic4u/",
+  "require": {
+    "synaptic4u/db": "^1.2.0",
+    "php": ">=7.4",
+    "ext-pdo": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Synaptic4U\\": "src/"
+    }
+  },
+  "scripts": {
+    "post-install-cmd": [
+        "@php -r \"if (!is_dir(getcwd() . '/logs')) mkdir(getcwd() . '/logs', 0775, true);\""
     ],
-    "homepage": "https://github.com/synaptic4u/",
-   
-    "require": {
-        "synaptic4u/db": "^1.2.0",
-        "php": ">=7.4",
-        "ext-pdo": "*"
-    },
-    "autoload": {
-        "psr-4": {
-            "Synaptic4U\\": "src/"
-        }
-    },
-    "scripts": {
-        "post-install-cmd": [
-            "@php -r \"if (!is_dir('logs')) mkdir('logs', 0775, true);\""
-        ]
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Emile De Wilde",
-            "email": "synaptic4u@gmail.com",
-            "homepage": "https://github.com/synaptic4u/logging",
-            "role": "Developer"
-        }
-    ],
-    "support": {
-        "email": "synaptic4u@gmail.com"
-    },
-    "funding": [
-        {
-            "type": "patreon",
-            "url": "https://www.patreon.com/synaptic4u"
-        }
+    "post-update-cmd": [
+        "@php -r \"if (!is_dir(getcwd() . '/logs')) mkdir(getcwd() . '/logs', 0775, true);\""
     ]
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Emile De Wilde",
+      "email": "synaptic4u@gmail.com",
+      "homepage": "https://github.com/synaptic4u/logging",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "synaptic4u@gmail.com"
+  },
+  "funding": [
+    {
+      "type": "patreon",
+      "url": "https://www.patreon.com/synaptic4u"
+    }
+  ]
 }
