@@ -20,10 +20,10 @@
   },
   "scripts": {
     "post-install-cmd": [
-        "@php -r \"if (!is_dir(getcwd() . '/logs')) mkdir(getcwd() . '/logs', 0775, true);\""
+        "@php -r \"if (!is_dir('../../../logs')) mkdir('../../../logs', 0775, true);\""
     ],
     "post-update-cmd": [
-        "@php -r \"if (!is_dir(getcwd() . '/logs')) mkdir(getcwd() . '/logs', 0775, true);\""
+        "@php -r \"if (!is_dir('../../../logs')) mkdir('../../../logs', 0775, true);\""
     ]
   },
   "license": "MIT",
