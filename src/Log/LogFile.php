@@ -122,8 +122,5 @@ class LogFile
     private function checkLogDir()
     {
 
-        if (!is_dir(dirname(__DIR__ . '/logs', 5))) {
-            mkdir(dirname(__DIR__ . '/logs', 5), 0775, true);
-        }
     }
 }
