@@ -16,6 +16,13 @@ if (file_exists(dirname(__FILE__,4) . '/autoload.php')) {
 use Synaptic4U\Log\Log;
 
 try {
+    if (!is_dir(dirname(__DIR__ . '/logs', 5))) {
+        mkdir(dirname(__DIR__ . '/logs', 5), 0775, true);
+    }else if(!is_dir(dirname(__DIR__ . '/logs', 3))){
+        mkdir(dirname(__DIR__ . '/logs', 3), 0775, true);
+    
+    }
+
     new Log("This is a test to default activity file.");
 } catch (Exception $e) {
     echo "There's a error: ". $e->getMessage() ."";

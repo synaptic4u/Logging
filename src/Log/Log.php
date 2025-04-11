@@ -17,7 +17,6 @@ class Log
         
         if (!('database' === (string) $file)) {
 
-            
             new LogDB($msg, $file, $userid);
         }
     }

@@ -31,3 +31,28 @@ To install the logging library, you can use pip:
 pip install your-logging-library
 # Logging
 Logging in a simplified way to a file or DB
+
+
+  "scripts": {
+    "post-install-cmd": [
+      "@php -r \"if (!is_dir(getcwd() . '/logs')) mkdir(getcwd() . '/logs', 0775, true);\""
+    ],
+    "post-update-cmd": [
+      "@php -r \"if (!is_dir(getcwd() . '/logs')) mkdir(getcwd() . '/logs', 0775, true);\""
+    ]
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "@php -r \"if (!is_dir('../../logs')) mkdir('../../logs', 0775, true);\"",
+      "@php -r \"if (!file_exists('../../database.ini')) file_put_contents('../../database.ini', '[database]\\nhost=localhost\\ndbname=mydb\\nuser=root\\npassword=');\""
+    ]
+  },
+
+    "scripts": {
+    "post-install-cmd": [
+      "@php -r \"if (!is_dir(getcwd() . '/logs')) mkdir(getcwd() . '/logs', 0775, true);\""
+    ],
+    "post-update-cmd": [
+      "@php -r \"if (!is_dir(getcwd() . '/logs')) mkdir(getcwd() . '/logs', 0775, true);\""
+    ]
+  },

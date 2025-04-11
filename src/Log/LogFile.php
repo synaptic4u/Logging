@@ -41,6 +41,8 @@ class LogFile
     public function __construct($msg, $file, $userid)
     {
         try {
+            $this->checkLogDir();
+
             $this->msg = $msg;
 
             $this->file = $file;
@@ -84,7 +86,7 @@ class LogFile
 
         // return $root.$app.$this->file.'.txt';
 
-        $filepath = dirname(__FILE__, 3) . '/logs/' . $this->file . '.txt';
+        $filepath = dirname(__FILE__, 5) . '/logs/' . $this->file . '.txt';
         return $filepath;
     }
 
@@ -115,5 +117,13 @@ class LogFile
         }
 
         return $message;
+    }
+
+    private function checkLogDir()
+    {
+
+        if (!is_dir(dirname(__DIR__ . '/logs', 5))) {
+            mkdir(dirname(__DIR__ . '/logs', 5), 0775, true);
+        }
     }
 }
