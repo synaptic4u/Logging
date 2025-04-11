@@ -2,6 +2,7 @@
   "name": "synaptic4u/logging",
   "description": "Custom logging class able to log to files and database",
   "type": "library",
+  "version": "1.3.2",
   "keywords": [
     "mysql",
     "logging",
@@ -17,11 +18,15 @@
     }
   },
   "scripts": {
+
+    "post-package-install": [
+            "\\Synaptic4U\\Install::checkLogs()"
+        ],
     "post-install-cmd": [
-      "@php vendor/synaptic4u/logging/src/create_logs_directory.php"
+      "\\Synaptic4U\\Install::checkLogs()"
     ],
     "post-update-cmd": [
-      "@php vendor/synaptic4u/logging/src/create_logs_directory.php"
+      "\\Synaptic4U\\Install::checkLogs()"
     ]
   },
   "license": "MIT",
