@@ -28,7 +28,8 @@ This project provides a simplified logging mechanism that allows you to log mess
 To install the logging library, you can use pip:
 
 ```bash
-pip install your-logging-library
+
+composer install syaptic4u/logging
 # Logging
 Logging in a simplified way to a file or DB
 

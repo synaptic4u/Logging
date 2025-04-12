@@ -13,14 +13,23 @@
   },
   "autoload": {
     "psr-4": {
-      "Synaptic4U\\": "src/"
-    }
+      "Synaptic4U\\": ["src/", "bin"]
+    },
+    "classmap": ["bin/Install.php"]
   },
+  "autoload-dev": {
+      "psr-4": { "Synaptic4U\\Tests\\": "tests/" }
+  },
+  "scripts-descriptions": {
+      "requirements_install": "Run the Logging install script to create logs directory & check or prompt for DB details.",
+      "test": "Test Loggig to ascertain DB and file logging."
+  },
+  "composer-runtime-api": "^2.2",
+  "bin": ["bin/Install.php"],
   "scripts": {
-
     "post-package-install": [
-            "\\Synaptic4U\\Install::checkLogs()"
-        ],
+      "\\Synaptic4U\\Install::checkLogs()"
+    ],
     "post-install-cmd": [
       "\\Synaptic4U\\Install::checkLogs()"
     ],
