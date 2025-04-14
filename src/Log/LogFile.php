@@ -41,7 +41,6 @@ class LogFile
     public function __construct($msg, $file, $userid)
     {
         try {
-            $this->checkLogDir();
 
             $this->msg = $msg;
 
@@ -63,11 +62,16 @@ class LogFile
      */
     protected function writeLog()
     {
-        $log = fopen($this->buildPath(), 'a');
+        try{
+            $log = fopen($this->buildPath(), 'a');
 
-        fwrite($log, $this->buildMessage());
+            fwrite($log, $this->buildMessage());
+    
+            fclose($log);
+        }catch(Exception $e){
+            echo "ERROR: " . $e->__toString().PHP_EOL;
+        }
 
-        fclose($log);
     }
 
     /**
@@ -86,7 +90,7 @@ class LogFile
 
         // return $root.$app.$this->file.'.txt';
 
-        $filepath = dirname(__FILE__, 5) . '/logs/' . $this->file . '.txt';
+        $filepath = getcwd() . '/logs/' . $this->file . '.txt';
         return $filepath;
     }
 
@@ -117,10 +121,5 @@ class LogFile
         }
 
         return $message;
-    }
-
-    private function checkLogDir()
-    {
-
     }
 }

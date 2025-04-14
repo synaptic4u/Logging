@@ -10,37 +10,19 @@ if (php_sapi_name() !== 'cli') {
     exit;
 }
 
-$production = false;
+$base_dir = getcwd();
 
-// DEV SETTING - CHANGE $production to TRUE FOR PACKAGIST
-$base_dir = $production ? dirname(__DIR__, 1) : dirname(__DIR__, 1)."/../test_composer_install";
+echo getcwd().PHP_EOL;
+echo getenv("PWD").PHP_EOL;
 
 if (file_exists($base_dir . '/vendor/autoload.php')) {    
+
     require_once $base_dir . '/vendor/autoload.php';
-    // var_dump($base_dir);
-}else if (file_exists(dirname(__DIR__, 4) . '/vendor/autoload.php')) {
-    $base_dir = dirname(__DIR__, 4);
-    require_once $base_dir . '/vendor/autoload.php';
-    // var_dump(dirname(__DIR__, 4));
 }else{
+
     echo 'EXITING: CANNOT AUTOLOAD!'.PHP_EOL;
-    // echo 'PWD: '.$base_dir.PHP_EOL;
     exit;
 }
-
-// use Minicli\App;
-// use Minicli\Command\CommandCall;
-
-// $app = new App();
-// $app->setSignature('Install::createLogsDirectory');
-
-// $app->registerCommand('Install::createLogsDirectory', function(CommandCall $input) {
-//     echo "Install::createLogsDirectory".PHP_EOL.PHP_EOL;
-
-//     var_dump($input);
-// });
-
-// $app->runCommand($argv);
 
 
 Install::logsConfiguration(base_dir: $base_dir);
