@@ -2,6 +2,7 @@
   "name": "synaptic4u/logging",
   "description": "Custom logging class able to log to files and database",
   "type": "library",
+  "version": "1.3.5",
   "keywords": [
     "mysql",
     "logging",
@@ -9,35 +10,28 @@
   ],
   "homepage": "https://github.com/synaptic4u/",
   "require": {
+    "composer-runtime-api": "*",
     "synaptic4u/db": "^1.3.1"
   },
   "autoload": {
     "psr-4": {
-      "Synaptic4U\\": ["src/", "bin"]
+      "Synaptic4U\\": [
+        "src/"
+      ]
     },
-    "classmap": ["bin/Install.php"]
-  },
-  "autoload-dev": {
-      "psr-4": { "Synaptic4U\\Tests\\": "tests/" }
-  },
-  "scripts-descriptions": {
-      "requirements_install": "Run the Logging install script to create logs directory & check or prompt for DB details.",
-      "test": "Test Loggig to ascertain DB and file logging."
-  },
-  "composer-runtime-api": "^2.2",
-  "bin": ["bin/Install.php"],
-  "scripts": {
-    "post-package-install": [
-      "\\Synaptic4U\\Install::checkLogs()"
-    ],
-    "post-install-cmd": [
-      "\\Synaptic4U\\Install::checkLogs()"
-    ],
-    "post-update-cmd": [
-      "\\Synaptic4U\\Install::checkLogs()"
+    "classmap": [
+      "bin/install"
     ]
   },
-  "license": "MIT",
+  "autoload-dev": {
+    "psr-4": {
+      "Synaptic4U\\Tests\\": "tests/"
+    }
+  },
+  "composer-runtime-api": "^2.2",
+  "bin": [
+    "bin/install"
+  ],
   "authors": [
     {
       "name": "Emile De Wilde",
@@ -54,5 +48,6 @@
       "type": "patreon",
       "url": "https://www.patreon.com/synaptic4u"
     }
-  ]
+  ],
+  "license": "MIT"
 }

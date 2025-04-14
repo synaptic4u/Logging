@@ -25,11 +25,14 @@ This project provides a simplified logging mechanism that allows you to log mess
 
 ## Installation
 
-To install the logging library, you can use pip:
+To install the logging library, you can use composer:
 
 ```bash
-
 composer install syaptic4u/logging
-# Logging
-Logging in a simplified way to a file or DB
+
+composer dump-autoload -o
+
+composer exec install
+```
+
 

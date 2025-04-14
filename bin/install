@@ -1,0 +1,94 @@
+#!/usr/bin/php
+<?php
+namespace Synaptic4U;
+
+use Exception;
+
+// echo "WORKS WORKS WORKS".PHP_EOL;
+
+if (php_sapi_name() !== 'cli') {
+    exit;
+}
+
+$production = false;
+
+// DEV SETTING - CHANGE $production to TRUE FOR PACKAGIST
+$base_dir = $production ? dirname(__DIR__, 1) : dirname(__DIR__, 1)."/../test_composer_install";
+
+if (file_exists($base_dir . '/vendor/autoload.php')) {    
+    require_once $base_dir . '/vendor/autoload.php';
+    // var_dump($base_dir);
+}else if (file_exists(dirname(__DIR__, 4) . '/vendor/autoload.php')) {
+    $base_dir = dirname(__DIR__, 4);
+    require_once $base_dir . '/vendor/autoload.php';
+    // var_dump(dirname(__DIR__, 4));
+}else{
+    echo 'EXITING: CANNOT AUTOLOAD!'.PHP_EOL;
+    // echo 'PWD: '.$base_dir.PHP_EOL;
+    exit;
+}
+
+// use Minicli\App;
+// use Minicli\Command\CommandCall;
+
+// $app = new App();
+// $app->setSignature('Install::createLogsDirectory');
+
+// $app->registerCommand('Install::createLogsDirectory', function(CommandCall $input) {
+//     echo "Install::createLogsDirectory".PHP_EOL.PHP_EOL;
+
+//     var_dump($input);
+// });
+
+// $app->runCommand($argv);
+
+
+Install::logsConfiguration(base_dir: $base_dir);
+
+class Install{
+    
+    public static function createLogsDirectory(string $logDir){
+
+        // echo "createLogsDirectory\n";
+     
+        if (!is_dir($logDir)) {
+            mkdir($logDir, 0775, true);
+            echo "Logs directory created.\n";
+        } else {
+            echo "Logs directory already exists.\n";
+        }
+    }
+
+    public static function logsConfiguration(string $base_dir){
+        // Checks for existing configuration or prompts users then creates one.
+        // echo "logsConfiguration\n";
+        $logDir = $base_dir . "/logs/";
+
+        try {
+            // DEFAULT
+            if (!is_dir($base_dir . "/logs/")){
+                $logDir = $base_dir . "/logs/";
+            }
+        
+            // echo "logs directory: ".$logDir."\n";
+            
+            self::createLogsDirectory($logDir);
+        } catch (Exception $e) {
+            echo "Error: ".$e->__tostring();
+            exit;
+        }
+    }
+    public static function databaseConfiguration(string $base_dir){
+        // Checks for existing configuration or prompts users then creates one.
+        // echo "LOG DIR INSTALL SCRIPT RUNNING.\n";
+
+    }
+
+    public static function databaseMigration(string $base_dir){
+        // Creates database for Logging.
+        // echo "LOG DIR INSTALL SCRIPT RUNNING.\n";
+
+    } 
+
+}
+?>
