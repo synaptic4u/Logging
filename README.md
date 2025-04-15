@@ -29,9 +29,11 @@ To install the logging library, you can use composer:
 The followig are cofiguratio files supported.
 Please add them to project directory.
 
-tests/.env
-tests/config.json
-tests/configNested.json
+vendor/synaptic4u/logging/tests/.env
+vendor/synaptic4u/logging/tests/config.json
+
+Rename configNested.json to config.json for testing
+vendor/synaptic4u/logging/tests/configNested.json
 
 ```bash
 composer install syaptic4u/logging
