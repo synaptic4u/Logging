@@ -1,0 +1,24 @@
+{
+  "DB_TYPES": ["logs", "application", "encryption", "user", "banking"],
+  "DB_LOGS_CONNECTION": "mysql",
+  "DB_LOGS_TYPE": "logs",
+  "DB_LOGS_HOST": "127.0.0.1",
+  "DB_LOGS_PORT": "3306",
+  "DB_LOGS_DATABASE": "logs",
+  "DB_LOGS_USERNAME": "logs",
+  "DB_LOGS_PASSWORD": "Peaches_And_Cream_!",
+
+  "DB_APPLICATION_CONNECTION": "mysql",
+  "DB_APPLICATION_TYPE": "app",
+  "DB_APPLICATION_HOST": "127.0.0.1",
+  "DB_APPLICATION_PORT": "3306",
+  "DB_APPLICATION_DATABASE": "app",
+  "DB_APPLICATION_USERNAME": "app",
+  "DB_APPLICATION_PASSWORD": "Peaches_And_Cream_!",
+
+  "LOG_TYPES": ["activity", "error", "ip", "database", "encryption"],
+  "LOG_DIR_PATH": "./logs",
+  "LOG_FILE": true,
+  "LOG_DB": false,
+  "LOG_LEVEL": "debug"
+}

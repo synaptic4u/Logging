@@ -4,7 +4,23 @@ namespace Synaptic4U;
 
 use Exception;
 
-// echo "WORKS WORKS WORKS".PHP_EOL;
+use function Laravel\Prompts\alert;
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\form;
+use function Laravel\Prompts\info;
+use function Laravel\Prompts\intro;
+use function Laravel\Prompts\multiselect;
+use function Laravel\Prompts\note;
+use function Laravel\Prompts\outro;
+use function Laravel\Prompts\password;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\spin;
+use function Laravel\Prompts\suggest;
+use function Laravel\Prompts\text;
+use function Laravel\Prompts\warning;
+
+$dev = true;
 
 if (php_sapi_name() !== 'cli') {
     exit;
@@ -12,65 +28,239 @@ if (php_sapi_name() !== 'cli') {
 
 $base_dir = getcwd();
 
-echo getcwd().PHP_EOL;
-echo getenv("PWD").PHP_EOL;
+// echo getcwd().PHP_EOL;
+// echo getenv("PWD").PHP_EOL;
 
 if (file_exists($base_dir . '/vendor/autoload.php')) {    
 
     require_once $base_dir . '/vendor/autoload.php';
 }else{
 
-    echo 'EXITING: CANNOT AUTOLOAD!'.PHP_EOL;
+    error( 'EXITING: CANNOT AUTOLOAD!');
     exit;
 }
 
+Install::setup(base_dir: $base_dir);
 
-Install::logsConfiguration(base_dir: $base_dir);
-
+/**
+ * Install sets up the vendor package requirements for this package.
+ * Directory creation
+ * DB Connection connection & migration
+ */
 class Install{
     
+    public static function setup($base_dir){
+
+        $config = [];
+
+        // 1. Intro
+        
+        intro('Welcome to Synaptic4U Package Setup'); 
+        
+        note("Only .env or config.json configuration files currently supported.");
+
+        // 2. Search then prompt for config / env variables
+        
+        $config = spin(function () use ($base_dir) {
+                
+                return self::checkConfiguration($base_dir);
+            },
+            'Looking for .env or config.json files in project directory...'
+        );
+        
+        // var_dump(json_encode($config, JSON_PRETTY_PRINT));
+        // echo $config['logs']['LOG']['LOG_DIR_PATH'];
+
+        $responses = form()
+            ->intro('Logs Configurationn')
+            ->text(
+                label: 'Confirm that this directory is correct?',
+                placeholder: $config['logs']['LOG']['LOG_DIR_PATH'] ? $config['logs']['LOG']['LOG_DIR_PATH'] : $config['logs']['LOG_DIR_PATH'],
+                validate: fn ($value) => match (true) {
+                    ! $value => 'Please enter a path',
+                    $value[0] !== '.' => 'Please enter a relative path',
+                    default => null,
+                },
+                default: $config['logs']['LOG']['LOG_DIR_PATH'] ? $config['logs']['LOG']['LOG_DIR_PATH'] : $config['logs']['LOG_DIR_PATH'],
+                name: 'LOG_DIR_PATH'
+            )
+            ->confirm(
+                label:'File logging is enabled',
+                default: $config['logs']['LOG']['LOG_FILE'] ? $config['logs']['LOG']['LOG_FILE'] : true,
+                required: true,
+                hint: 'File logging is mandatory.',
+                name: 'LOG_FILE'
+            )
+            ->confirm(
+                label:'DB logging is disabled',
+                default: $config['logs']['LOG']['LOG_DB'] ? $config['logs']['LOG']['LOG_DB'] : false,
+                required: false,
+                hint: 'DB logging is optional.',
+                name: 'LOG_DB'
+            )
+            ->pause()
+            ->submit();
+
+        var_dump($responses);
+
+        self::logsConfiguration($base_dir);
+
+    }
     public static function createLogsDirectory(string $logDir){
 
-        // echo "createLogsDirectory\n";
-     
-        if (!is_dir($logDir)) {
-            mkdir($logDir, 0775, true);
-            echo "Logs directory created.\n";
-        } else {
-            echo "Logs directory already exists.\n";
-        }
+        return mkdir($logDir, 0775, true);
     }
 
     public static function logsConfiguration(string $base_dir){
-        // Checks for existing configuration or prompts users then creates one.
-        // echo "logsConfiguration\n";
+        // Checks for existing log directory.
+        intro("Log Configuration");
+
         $logDir = $base_dir . "/logs/";
 
         try {
             // DEFAULT
             if (!is_dir($base_dir . "/logs/")){
+
                 $logDir = $base_dir . "/logs/";
+                // info( "Logs directory: ".$logDir);
+                
+                (false == self::createLogsDirectory($logDir)) ? throw new Exception("Problem making logs directory.") : '';
+                
+                info("Log's directory created.");
+            }else {
+
+                warning("Log's directory already exists.");
             }
         
-            // echo "logs directory: ".$logDir."\n";
-            
-            self::createLogsDirectory($logDir);
         } catch (Exception $e) {
-            echo "Error: ".$e->__tostring();
+            error("Message: ".$e->getMessage()."\nError: ".$e->__tostring());
             exit;
         }
     }
-    public static function databaseConfiguration(string $base_dir){
-        // Checks for existing configuration or prompts users then creates one.
-        // echo "LOG DIR INSTALL SCRIPT RUNNING.\n";
 
+    public static function checkConfiguration(string $base_dir){
+
+        // Checks for existing configuration or prompts users then creates one.
+
+        $config_path = '';
+        $env = [];
+        $config = null;
+
+        try {
+            // DEFAULT JSON, .ENV. Config directories...
+            if(is_file($base_dir . "/configNested.json")){
+
+                $config_path = $base_dir . "/configNested.json";
+
+                // info("Config path: ".$config_path);
+
+                $env = json_decode(file_get_contents($config_path), true, 5, JSON_OBJECT_AS_ARRAY);
+                
+                // var_dump(json_encode($env, JSON_PRETTY_PRINT));
+
+                $config = self::filterEnvList($env);
+
+                $config['CONFIG_TYPE'] = "json";
+                $config['CONFIG_PATH'] = $config_path;
+                
+                // var_dump(json_encode($config, JSON_PRETTY_PRINT));
+            }else if (is_file($base_dir . "/.env")){
+
+                $config_path = $base_dir . "/.env";
+
+                // info("Config: ".$config_path);
+
+                $env = self::getEnvFile($config_path);
+
+                // var_dump($env);
+        
+                $config = self::filterEnvList($env);
+
+                $config['CONFIG_TYPE'] = "env";
+                $config['CONFIG_PATH'] = $config_path;
+
+                // var_dump($config);
+            }
+        
+            return $config;
+        } catch (Exception $e) {
+            error("Message: ".$e->getMessage()."\nError: ".$e->__tostring());
+            exit;
+        }
+    }
+
+    public static function filterEnvList($env){
+        try {
+
+            $result = [
+                "logs"=> null, 
+                "db"=> null
+            ];
+            
+            // $parse = function(string $haystack, string $kneedle){
+
+            //     return str_starts_with(strtolower($haystack), strtolower($kneedle));
+            // };
+
+            $result['logs'] = array_filter($env, function($k){
+
+                return str_starts_with(strtolower($k), strtolower("log"));
+            }, ARRAY_FILTER_USE_KEY);
+
+            $result['db'] = array_filter($env, function($k){
+
+                return str_starts_with(strtolower($k), strtolower("db"));
+            }, ARRAY_FILTER_USE_KEY);
+            
+            return $result;
+        } catch (Exception $e) {
+
+            error('Error: '.$e->__toString());
+        }
+    }
+
+    public static function getEnvFile($filePath){
+        try {
+
+            if (!file_exists($filePath) || !is_readable($filePath)) {
+                throw new Exception("Environment file not found or readable: ".$filePath);
+            }
+            
+            $env = [];
+            $values = [];
+    
+            $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    
+            foreach ($lines as $line) {
+    
+                $line = trim($line);
+    
+                // Skip comments
+                if(str_starts_with($line, '#')){
+                    continue; 
+                }
+    
+                $values = explode('=', $line);
+                // var_dump($values);
+    
+                $env[trim($values[0])] = trim($values[1]);
+            }
+
+            return $env;
+        } catch (Exception $e) {
+
+            error('Error: '.$e->__toString());
+        }
+    }
+
+    public static function databaseConfiguration(string $base_dir){
+        // 
     }
 
     public static function databaseMigration(string $base_dir){
         // Creates database for Logging.
-        // echo "LOG DIR INSTALL SCRIPT RUNNING.\n";
+        echo "LOG DIR INSTALL SCRIPT RUNNING.\n";
 
     } 
-
 }
 ?>
