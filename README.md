@@ -26,6 +26,12 @@ This project provides a simplified logging mechanism that allows you to log mess
 ## Installation
 
 To install the logging library, you can use composer:
+The followig are cofiguratio files supported.
+Please add them to project directory.
+
+tests/.env
+tests/config.json
+tests/configNested.json
 
 ```bash
 composer install syaptic4u/logging
