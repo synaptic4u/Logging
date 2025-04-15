@@ -34,5 +34,5 @@ composer dump-autoload -o
 
 composer exec install
 ```
-
+Then follow the prompts.
 

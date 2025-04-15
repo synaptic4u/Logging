@@ -36,7 +36,7 @@ if (file_exists($base_dir . '/vendor/autoload.php')) {
     require_once $base_dir . '/vendor/autoload.php';
 }else{
 
-    error( 'EXITING: CANNOT AUTOLOAD!');
+    echo( 'EXITING: CANNOT AUTOLOAD!');
     exit;
 }
 
