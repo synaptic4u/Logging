@@ -27,7 +27,6 @@
       "Synaptic4U\\Tests\\": "tests/"
     }
   },
-  "composer-runtime-api": "^2.2",
   "bin": [
     "bin/install"
   ],
