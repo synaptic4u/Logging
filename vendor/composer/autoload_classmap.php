@@ -7,8 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
-    'Synaptic4U\\Log\\Log' => $baseDir . '/src/Log/Log.php',
-    'Synaptic4U\\Log\\LogDB' => $baseDir . '/src/Log/LogDB.php',
-    'Synaptic4U\\Log\\LogFile' => $baseDir . '/src/Log/LogFile.php',
-    'Synaptic4U\\Log\\LogInterface' => $baseDir . '/src/Log/LogInterface.php',
+    'Normalizer' => $vendorDir . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
 );

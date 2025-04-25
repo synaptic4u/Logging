@@ -1,0 +1,513 @@
+#!/usr/bin/php
+<?php
+namespace Synaptic4U;
+
+use Exception;
+
+use RecursiveIteratorIterator;
+use function Laravel\Prompts\form;
+use function Laravel\Prompts\info;
+use function Laravel\Prompts\note;
+use function Laravel\Prompts\spin;
+use function Laravel\Prompts\text;
+use function Laravel\Prompts\alert;
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\intro;
+use function Laravel\Prompts\outro;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\suggest;
+use function Laravel\Prompts\warning;
+use function Laravel\Prompts\password;
+use function Laravel\Prompts\multiselect;
+
+if (php_sapi_name() !== 'cli') {
+    echo "This script must be run in the CLI environment. Please execute it from the command line.\n";
+    exit(1);
+}
+
+// TESTS: Check the actual directory path for pulling package from local repo clone,
+
+// echo(json_encode($argv, JSON_PRETTY_PRINT));
+// var_dump(json_encode(getenv(), JSON_PRETTY_PRINT));
+// $base_dir_realpath = realpath(__DIR__. '/../');
+// $base_dir_dirname = dirname(__DIR__, 1);
+// $base_dir_OLDPWD = getenv("OLDPWD");
+// $base_dir_getcwd = getcwd();
+// echo "BASE DIR realpath: ".$base_dir_realpath.PHP_EOL.PHP_EOL;
+// echo "BASE DIR dirname: ".$base_dir_dirname.PHP_EOL.PHP_EOL;
+// echo "BASE DIR OLDPWD: ".$base_dir_OLDPWD.PHP_EOL.PHP_EOL;
+// echo "BASE DIR getcwd: ".$base_dir_getcwd.PHP_EOL.PHP_EOL;
+
+// DEV OPTION MUST BE SET TO FALSE FOR NOT USING repositories IN COMPOSER.JSON
+$dev = (array_search("dev", $argv)) ? true : false;
+echo "DEV OPTION FROM CLI: ".($dev == true ? "true":"false").PHP_EOL;
+
+// DEV REPO
+$base_dir_PWD = getenv("PWD");
+// PACKAGIST install
+$base_dir_realpath = realpath(__DIR__ . '/../');
+
+$base_dir = $dev ? $base_dir_PWD : $base_dir_realpath;
+
+echo "BASE DIR PWD: ".$base_dir_PWD.PHP_EOL;
+echo "BASE DIR: USE".$base_dir_realpath.PHP_EOL;
+echo "BASE DIR: USING".$base_dir.PHP_EOL;
+
+// exit(1);
+
+if (file_exists($base_dir . '/vendor/autoload.php')) {
+
+    require_once $base_dir . '/vendor/autoload.php';
+
+    Install::setup(base_dir: $base_dir);
+} else {
+    echo 'EXITING: CANNOT AUTOLOAD! Please ensure that the Composer dependencies are installed by running "composer install" in the project directory.';
+    echo ('EXITING: CANNOT AUTOLOAD!');
+    exit(1);
+}
+
+/**
+ * Install sets up the vendor package requirements for this package.
+ * Directory creation
+ * DB Connection connection & migration
+ */
+class Install
+{
+    /**
+     * Sets up the logging installation process.
+     *
+     * @param string $base_dir The base directory where the setup process will be executed.
+     * @return void
+     */
+    public static function setup($base_dir)
+    {
+        $config = [];
+
+        // 1. Intro
+        intro('Welcome to Synaptic4U Package Manager Setup');
+
+        note("Only .env or config.json configuration files currently supported.");
+
+        // 2. Search then prompt for config / env variables
+        $config = spin(
+            function () use ($base_dir) {
+                return self::checkConfiguration($base_dir);
+            },
+            'Looking for .env or config.json files in project directory...'
+        );
+
+        // Prompt user to confirm or modify the logs directory
+        $responses = form()
+            ->intro('Logs Configuration')
+            ->text(
+                label: 'Confirm or modify the logs directory path:',
+                placeholder: $config['log']['LOG']['LOG_DIR_PATH'] ?? $config['log']['LOG_DIR_PATH'] ?? '',
+                validate: fn($value) => match (true) {
+                    !$value => 'Please enter a path',
+                    $value[0] !== '.' => 'Please enter a relative path',
+                    default => null,
+                },
+                default: $config['log']['LOG']['LOG_DIR_PATH'] ?? $config['log']['LOG_DIR_PATH'] ?? '',
+                name: 'LOG_DIR_PATH'
+            )
+            ->confirm(
+                label: 'File logging is enabled',
+                default: $config['log']['LOG']['LOG_FILE'] ? $config['log']['LOG']['LOG_FILE'] : true,
+                required: true,
+                hint: 'File logging is mandatory.',
+                name: 'LOG_FILE'
+            )
+            ->confirm(
+                label: 'Enable database logging?',
+                default: $config['log']['LOG']['LOG_DB'] ?? false,
+                required: false,
+                hint: 'Database logging is optional.',
+                name: 'LOG_DB'
+            )
+            ->pause()
+            ->submit();
+
+        // Update the configuration with user responses
+        $config['log']['LOG']['LOG_DIR_PATH'] = $responses['LOG_DIR_PATH'];
+        $config['log']['LOG']['LOG_FILE'] = $responses['LOG_FILE'];
+        $config['log']['LOG']['LOG_DB'] = $responses['LOG_DB'];
+
+        // Handle multiple databases
+        if ($responses['LOG_DB']) {
+            $dbResponses = form()
+                ->intro('Database Configuration')
+                ->text(
+                    label: 'Enter the database host:',
+                    placeholder: $config['db']['DB_HOST'] ?? 'localhost',
+                    validate: fn($value) => !$value ? 'Please enter a database host' : null,
+                    default: $config['db']['DB_HOST'] ?? 'localhost',
+                    name: 'DB_HOST'
+                )
+                ->text(
+                    label: 'Enter the database name:',
+                    placeholder: $config['db']['DB_NAME'] ?? '',
+                    validate: fn($value) => !$value ? 'Please enter a database name' : null,
+                    default: $config['db']['DB_NAME'] ?? '',
+                    name: 'DB_NAME'
+                )
+                ->text(
+                    label: 'Enter the database user:',
+                    placeholder: $config['db']['DB_USER'] ?? '',
+                    validate: fn($value) => !$value ? 'Please enter a database user' : null,
+                    default: $config['db']['DB_USER'] ?? '',
+                    name: 'DB_USER'
+                )
+                ->password(
+                    label: 'Enter the database password:',
+                    placeholder: '******',
+                    name: 'DB_PASSWORD'
+                )
+                ->pause()
+                ->submit();
+
+            // Update the configuration with database responses
+            $config['db']['DB_HOST'] = $dbResponses['DB_HOST'];
+            $config['db']['DB_NAME'] = $dbResponses['DB_NAME'];
+            $config['db']['DB_USER'] = $dbResponses['DB_USER'];
+            $config['db']['DB_PASSWORD'] = $dbResponses['DB_PASSWORD'];
+        }
+
+        // Save the configuration to a master_config.json file
+        self::saveConfiguration($base_dir, $config);
+
+        // Proceed with logs configuration
+        self::logsConfiguration($base_dir);
+    }
+
+    /**
+     * Saves the logging configuration to the specified base directory.
+     *
+     * @param string $base_dir The base directory where the configuration will be saved.
+     * @param array $config An associative array containing the configuration settings.
+     * 
+     * @return void
+     */
+    public static function saveConfiguration(string $base_dir, array $config)
+    {
+        $configFilePath = $base_dir . '/master_config.json';
+
+        try {
+            file_put_contents($configFilePath, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            info("Configuration saved to master_config.json.");
+        } catch (Exception $e) {
+            error("Failed to save configuration: " . $e->getMessage());
+            exit;
+        }
+    }
+
+    /**
+     * Creates a logs directory at the specified path.
+     *
+     * @param string $logDir The path where the logs directory should be created.
+     *                        This should be a valid directory path.
+     *
+     * @return void
+     */
+    public static function createLogsDirectory(string $logDir)
+    {
+
+        return mkdir($logDir, 0775, true);
+    }
+
+    /**
+     * Configures the logging system for the application.
+     *
+     * @param string $base_dir The base directory where the log files will be stored.
+     * @return void
+     */
+    public static function logsConfiguration(string $base_dir)
+    {
+        // Checks for existing log directory.
+        intro("Log Configuration");
+
+        $logDir = $base_dir . "/logs/";
+
+        try {
+            // DEFAULT
+            if (!is_dir($base_dir . "/logs/")) {
+
+                $logDir = $base_dir . "/logs/";
+                // info( "Logs directory: ".$logDir);
+
+                if (false == self::createLogsDirectory($logDir)) {
+                    throw new Exception("Problem making logs directory.");
+                }
+
+                info("Log's directory created.");
+            } else {
+
+                warning("Log's directory already exists.");
+            }
+
+        } catch (Exception $e) {
+            error("Message: " . $e->getMessage() . "\nError: " . $e->__tostring());
+            exit;
+        }
+    }
+    
+    /**
+     * Checks the configuration of the application based on the provided base directory.
+     *
+     * @param string $base_dir The base directory path to check the configuration against.
+     * @return void
+     */
+    public static function checkConfiguration(string $base_dir)
+    {
+        $config_path = '';
+        $env = [];
+        $config = null;
+
+        try {
+            // Possible configuration paths
+            $possiblePaths = [
+                $base_dir . "/configNested.json",
+                $base_dir . "/.env",
+                $base_dir . "/app/config",
+                $base_dir . "/config",
+                $base_dir . "/application/config/config.php", // CodeIgniter
+                $base_dir . "/config/app.php", // Laravel
+                $base_dir . "/config/packages", // Symfony
+                
+                $base_dir . "/config_test_codeigniter",
+                $base_dir . "/config_test_laravel",
+                $base_dir . "/config_test_symfony",
+            ];
+
+            // var_dump($possiblePaths);
+
+            foreach ($possiblePaths as $path) {
+                if (is_file($path)) {
+                    $config_path = $path;
+                    break;
+                } elseif (is_dir($path)) {
+
+                    var_dump($path);
+
+                    // Parse all PHP files in the directory and subdirectories
+                    $phpFiles = self::getPhpFilesFromDirectory($path);
+
+                    var_dump($phpFiles);
+
+                    foreach ($phpFiles as $phpFile) {
+                        $fileConfig = include $phpFile;
+                        echo $phpFile;
+                        if (!is_array($fileConfig)) {
+                            throw new Exception("PHP configuration file must return an array: " . $phpFile);
+                        }
+                        $env = array_merge_recursive($env, $fileConfig);
+                    }
+                    $config = self::filterEnvList($env);
+                    $config['CONFIG_TYPE'] = "php";
+                    $config['CONFIG_PATH'] = $path;
+                    break;
+                }
+            }
+
+            if (!$config && $config_path) {
+                if (str_ends_with($config_path, '.json')) {
+
+                    $env = json_decode(file_get_contents($config_path), true, 5, JSON_OBJECT_AS_ARRAY);
+                    $config = self::filterEnvList($env);
+                    $config['CONFIG_TYPE'] = "json";
+                } elseif (str_ends_with($config_path, '.env')) {
+
+                    $env = self::getEnvFile($config_path);
+                    $config = self::filterEnvList($env);
+                    $config['CONFIG_TYPE'] = "env";
+                } elseif (str_ends_with($config_path, 'config.php')) {
+
+                    // CodeIgniter config.php
+                    $env = include $config_path;
+                    $config = self::filterEnvList($env);
+                    $config['CONFIG_TYPE'] = "codeigniter";
+                } elseif (str_ends_with($config_path, 'app.php')) {
+
+                    // Laravel app.php
+                    $env = include $config_path;
+                    $config = self::filterEnvList($env);
+                    $config['CONFIG_TYPE'] = "laravel";
+                } elseif (str_contains($config_path, 'packages')) {
+                    
+                    // Symfony config/packages
+                    $phpFiles = self::getPhpFilesFromDirectory($config_path);
+                    
+                    foreach ($phpFiles as $phpFile) {
+                        $fileConfig = include $phpFile;
+                        var_dump($fileConfig);
+                        if (!is_array($fileConfig)) {
+                            throw new Exception("Symfony configuration file must return an array: " . $phpFile);
+                        }
+                        $env = array_merge_recursive($env, $fileConfig);
+                    }
+                    $config = self::filterEnvList($env);
+                    $config['CONFIG_TYPE'] = "symfony";
+                }
+            }
+
+            if ($config === null) {
+                throw new Exception("No configuration file found. Please ensure a valid .env, config.json, or framework-specific configuration files exist in the project directory or its subdirectories.");
+            }
+
+            return $config;
+        } catch (Exception $e) {
+            error("Message: " . $e->getMessage() . "\nError: " . $e->__toString());
+            exit;
+        }
+    }
+    
+    /**
+     * Recursively retrieves all PHP files from the specified directory.
+     *
+     * @param string $directory The path to the directory to scan for PHP files.
+     * 
+     * @return array An array of file paths for all PHP files found in the directory.
+     */
+    private static function getPhpFilesFromDirectory(string $directory): array
+    {
+        $phpFiles = [];
+        $iterator = new RecursiveIteratorIterator(new \RecursiveDirectoryIterator(directory: $directory));
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'php') {
+                $phpFiles[] = $file->getPathname();
+            }
+        }
+        return $phpFiles;
+    }
+    
+    /**
+     * Filters the provided environment list for a array of values to search for.
+     *
+     * @param array $env The environment array to be filtered.
+     * @param array $result An optional associative array with default values for "log" and "db".
+     *                       Defaults to ["log" => "", "db" => ""].
+     * @return array The filtered environment list with the specified or default values.
+     */
+    public static function filterEnvList($env, $result = [ "log" => "", "db" => ""])
+    {
+        try {
+
+            foreach($result as $key => $val){
+
+                $result[$key] = array_filter($env, function ($k) use ($key) {
+
+                    return str_starts_with(strtolower($k), needle: strtolower($key));
+                }, ARRAY_FILTER_USE_KEY);
+            }
+        } catch (Exception $e) {
+
+            error('Error: ' . $e->__toString());
+        }finally{
+            return $result;
+        }
+    }
+
+    /**
+     * Retrieves the content of the specified environment file.
+     *
+     * @param string $filePath The path to the environment file.
+     * @return mixed The content of the environment file, or null if the file does not exist or cannot be read.
+     */
+    public static function getEnvFile($filePath)
+    {
+        try {
+
+            if (!file_exists($filePath) || !is_readable($filePath)) {
+                throw new Exception("Environment file not found or readable: " . $filePath);
+            }
+
+            $env = [];
+            $values = [];
+
+            $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+            foreach ($lines as $line) {
+
+                $line = trim($line);
+
+                // Skip comments
+                if (str_starts_with($line, '#')) {
+                    continue;
+                }
+
+                $values = explode('=', $line);
+                // var_dump($values);
+
+                $env[trim($values[0])] = trim($values[1]);
+            }
+
+            return $env;
+        } catch (Exception $e) {
+
+            error('Error: ' . $e->__toString());
+        }
+    }
+
+    /**
+     * Configures the database settings for the application.
+     *
+     * @param string $base_dir The base directory of the application.
+     * @param array $config An associative array containing database configuration settings.
+     *
+     * @return void
+     */
+    public static function databaseConfiguration(string $base_dir, array $config)
+    {
+        intro('Database Configuration');
+
+        // Prompt user for database settings
+        $dbResponses = form()
+            ->text(
+                label: 'Enter the database host:',
+                placeholder: $config['db']['DB_HOST'] ?? 'localhost',
+                validate: fn($value) => !$value ? 'Please enter a database host' : null,
+                default: $config['db']['DB_HOST'] ?? 'localhost',
+                name: 'DB_HOST'
+            )
+            ->text(
+                label: 'Enter the database name:',
+                placeholder: $config['db']['DB_NAME'] ?? '',
+                validate: fn($value) => !$value ? 'Please enter a database name' : null,
+                default: $config['db']['DB_NAME'] ?? '',
+                name: 'DB_NAME'
+            )
+            ->text(
+                label: 'Enter the database user:',
+                placeholder: $config['db']['DB_USER'] ?? '',
+                validate: fn($value) => !$value ? 'Please enter a database user' : null,
+                default: $config['db']['DB_USER'] ?? '',
+                name: 'DB_USER'
+            )
+            ->password(
+                label: 'Enter the database password:',
+                placeholder: '******',
+                name: 'DB_PASSWORD'
+            )
+            ->pause()
+            ->submit();
+
+        // Update the configuration with database responses
+        $config['db']['DB_HOST'] = $dbResponses['DB_HOST'];
+        $config['db']['DB_NAME'] = $dbResponses['DB_NAME'];
+        $config['db']['DB_USER'] = $dbResponses['DB_USER'];
+        $config['db']['DB_PASSWORD'] = $dbResponses['DB_PASSWORD'];
+
+        // Save the updated configuration
+        self::saveConfiguration($base_dir, $config);
+
+        info('Database configuration updated successfully.');
+    }
+
+    public static function databaseMigration(string $base_dir)
+    {
+        // Creates database for Logging.
+        echo "LOG DIR INSTALL SCRIPT RUNNING.\n";
+
+    }
+}
+?>

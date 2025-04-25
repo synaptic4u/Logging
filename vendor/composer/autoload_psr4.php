@@ -6,5 +6,15 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Synaptic4U\\' => array($baseDir . '/src'),
+    'Synaptic4U\\Tests\\' => array($baseDir . '/tests'),
+    'Synaptic4U\\' => array($baseDir . '/src', $vendorDir . '/synaptic4u/db/src'),
+    'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
+    'Symfony\\Polyfill\\Intl\\Normalizer\\' => array($vendorDir . '/symfony/polyfill-intl-normalizer'),
+    'Symfony\\Polyfill\\Intl\\Grapheme\\' => array($vendorDir . '/symfony/polyfill-intl-grapheme'),
+    'Symfony\\Polyfill\\Ctype\\' => array($vendorDir . '/symfony/polyfill-ctype'),
+    'Symfony\\Contracts\\Service\\' => array($vendorDir . '/symfony/service-contracts'),
+    'Symfony\\Component\\String\\' => array($vendorDir . '/symfony/string'),
+    'Symfony\\Component\\Console\\' => array($vendorDir . '/symfony/console'),
+    'Psr\\Container\\' => array($vendorDir . '/psr/container/src'),
+    'Laravel\\Prompts\\' => array($vendorDir . '/laravel/prompts/src'),
 );

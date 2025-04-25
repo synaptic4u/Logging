@@ -21,28 +21,55 @@ use function Laravel\Prompts\warning;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\multiselect;
 
-$dev = true;
-
 if (php_sapi_name() !== 'cli') {
     echo "This script must be run in the CLI environment. Please execute it from the command line.\n";
     exit(1);
 }
 
-$base_dir = getcwd();
+// TESTS: Check the actual directory path for pulling package from local repo clone,
 
-// echo getcwd().PHP_EOL;
-// echo getenv("PWD").PHP_EOL;
+// echo(json_encode($argv, JSON_PRETTY_PRINT));
+// var_dump(json_encode(getenv(), JSON_PRETTY_PRINT));
+// $base_dir_realpath = realpath(__DIR__. '/../');
+// $base_dir_dirname = dirname(__DIR__, 1);
+// $base_dir_OLDPWD = getenv("OLDPWD");
+// $base_dir_getcwd = getcwd();
+// echo "BASE DIR realpath: ".$base_dir_realpath.PHP_EOL.PHP_EOL;
+// echo "BASE DIR dirname: ".$base_dir_dirname.PHP_EOL.PHP_EOL;
+// echo "BASE DIR OLDPWD: ".$base_dir_OLDPWD.PHP_EOL.PHP_EOL;
+// echo "BASE DIR getcwd: ".$base_dir_getcwd.PHP_EOL.PHP_EOL;
 
-if (file_exists($base_dir . '/vendor/autoload.php')) {
+// DEV OPTION MUST BE SET TO FALSE FOR NOT USING repositories IN COMPOSER.JSON
+$dev = (array_search("dev", $argv)) ? true : false;
+echo "DEV OPTION FROM CLI: ".($dev == true ? "true":"false").PHP_EOL;
 
-    require_once $base_dir . '/vendor/autoload.php';
-} else {
-    echo 'EXITING: CANNOT AUTOLOAD! Please ensure that the Composer dependencies are installed by running "composer install" in the project directory.';
-    echo ('EXITING: CANNOT AUTOLOAD!');
-    exit;
+// DEV REPO
+$base_dir_PWD = getenv("PWD");
+// PACKAGIST install
+$base_dir_realpath = realpath(__DIR__ . '/../');
+
+$base_dir = $dev ? $base_dir_PWD : $base_dir_realpath;
+
+echo "BASE DIR PWD: ".$base_dir_PWD.PHP_EOL;
+echo "BASE DIR: USE".$base_dir_realpath.PHP_EOL;
+echo "BASE DIR: USING".$base_dir.PHP_EOL;
+
+// exit(1);
+try {
+    if (file_exists($base_dir . '/vendor/autoload.php')) {
+
+        require_once $base_dir . '/vendor/autoload.php';
+    } else {
+        $msg = 'EXITING: CANNOT AUTOLOAD! Please ensure that the Composer dependencies are installed by running "composer install" in the project directory.'
+        .PHP_EOL.'EXITING: CANNOT AUTOLOAD!';
+
+        throw new Exception($msg);
+    }
+
+    Install::setup(base_dir: $base_dir);
+} catch (Exception $e) {
+    exit($e->getMessage());
 }
-
-Install::setup(base_dir: $base_dir);
 
 /**
  * Install sets up the vendor package requirements for this package.
@@ -62,7 +89,7 @@ class Install
         $config = [];
 
         // 1. Intro
-        intro('Welcome to Synaptic4U Package Setup');
+        intro('Welcome to Synaptic4U Package Manager Setup');
 
         note("Only .env or config.json configuration files currently supported.");
 
@@ -103,7 +130,7 @@ class Install
                 name: 'LOG_DB'
             )
             ->pause()
-            ->submit();
+        ->submit();
 
         // Update the configuration with user responses
         $config['log']['LOG']['LOG_DIR_PATH'] = $responses['LOG_DIR_PATH'];
@@ -256,7 +283,7 @@ class Install
                 $base_dir . "/config_test_symfony",
             ];
 
-            var_dump($possiblePaths);
+            // var_dump($possiblePaths);
 
             foreach ($possiblePaths as $path) {
                 if (is_file($path)) {
@@ -264,12 +291,12 @@ class Install
                     break;
                 } elseif (is_dir($path)) {
 
-                    var_dump($path);
+                    // var_dump($path);
 
                     // Parse all PHP files in the directory and subdirectories
                     $phpFiles = self::getPhpFilesFromDirectory($path);
 
-                    var_dump($phpFiles);
+                    // var_dump($phpFiles);
 
                     foreach ($phpFiles as $phpFile) {
                         $fileConfig = include $phpFile;
@@ -333,7 +360,9 @@ class Install
 
             return $config;
         } catch (Exception $e) {
-            error("Message: " . $e->getMessage() . "\nError: " . $e->__toString());
+            $msg  = "Message:\n" . $e->getMessage();
+            $msg .= (array_search("dev", $argv)) ? "\n\nError:\n" . $e->__toString() : "";
+            error($msg);
             exit;
         }
     }
