@@ -51,8 +51,12 @@ Install::setup(base_dir: $base_dir);
  */
 class Install
 {
-
-
+    /**
+     * Sets up the logging installation process.
+     *
+     * @param string $base_dir The base directory where the setup process will be executed.
+     * @return void
+     */
     public static function setup($base_dir)
     {
         $config = [];
@@ -75,25 +79,25 @@ class Install
             ->intro('Logs Configuration')
             ->text(
                 label: 'Confirm or modify the logs directory path:',
-                placeholder: $config['logs']['LOG']['LOG_DIR_PATH'] ?? $config['logs']['LOG_DIR_PATH'] ?? '',
+                placeholder: $config['log']['LOG']['LOG_DIR_PATH'] ?? $config['log']['LOG_DIR_PATH'] ?? '',
                 validate: fn($value) => match (true) {
                     !$value => 'Please enter a path',
                     $value[0] !== '.' => 'Please enter a relative path',
                     default => null,
                 },
-                default: $config['logs']['LOG']['LOG_DIR_PATH'] ?? $config['logs']['LOG_DIR_PATH'] ?? '',
+                default: $config['log']['LOG']['LOG_DIR_PATH'] ?? $config['log']['LOG_DIR_PATH'] ?? '',
                 name: 'LOG_DIR_PATH'
             )
             ->confirm(
                 label: 'File logging is enabled',
-                default: $config['logs']['LOG']['LOG_FILE'] ? $config['logs']['LOG']['LOG_FILE'] : true,
+                default: $config['log']['LOG']['LOG_FILE'] ? $config['log']['LOG']['LOG_FILE'] : true,
                 required: true,
                 hint: 'File logging is mandatory.',
                 name: 'LOG_FILE'
             )
             ->confirm(
                 label: 'Enable database logging?',
-                default: $config['logs']['LOG']['LOG_DB'] ?? false,
+                default: $config['log']['LOG']['LOG_DB'] ?? false,
                 required: false,
                 hint: 'Database logging is optional.',
                 name: 'LOG_DB'
@@ -102,9 +106,9 @@ class Install
             ->submit();
 
         // Update the configuration with user responses
-        $config['logs']['LOG']['LOG_DIR_PATH'] = $responses['LOG_DIR_PATH'];
-        $config['logs']['LOG']['LOG_FILE'] = $responses['LOG_FILE'];
-        $config['logs']['LOG']['LOG_DB'] = $responses['LOG_DB'];
+        $config['log']['LOG']['LOG_DIR_PATH'] = $responses['LOG_DIR_PATH'];
+        $config['log']['LOG']['LOG_FILE'] = $responses['LOG_FILE'];
+        $config['log']['LOG']['LOG_DB'] = $responses['LOG_DB'];
 
         // Handle multiple databases
         if ($responses['LOG_DB']) {
@@ -153,6 +157,14 @@ class Install
         self::logsConfiguration($base_dir);
     }
 
+    /**
+     * Saves the logging configuration to the specified base directory.
+     *
+     * @param string $base_dir The base directory where the configuration will be saved.
+     * @param array $config An associative array containing the configuration settings.
+     * 
+     * @return void
+     */
     public static function saveConfiguration(string $base_dir, array $config)
     {
         $configFilePath = $base_dir . '/master_config.json';
@@ -166,12 +178,26 @@ class Install
         }
     }
 
+    /**
+     * Creates a logs directory at the specified path.
+     *
+     * @param string $logDir The path where the logs directory should be created.
+     *                        This should be a valid directory path.
+     *
+     * @return void
+     */
     public static function createLogsDirectory(string $logDir)
     {
 
         return mkdir($logDir, 0775, true);
     }
 
+    /**
+     * Configures the logging system for the application.
+     *
+     * @param string $base_dir The base directory where the log files will be stored.
+     * @return void
+     */
     public static function logsConfiguration(string $base_dir)
     {
         // Checks for existing log directory.
@@ -202,6 +228,12 @@ class Install
         }
     }
     
+    /**
+     * Checks the configuration of the application based on the provided base directory.
+     *
+     * @param string $base_dir The base directory path to check the configuration against.
+     * @return void
+     */
     public static function checkConfiguration(string $base_dir)
     {
         $config_path = '';
@@ -287,12 +319,16 @@ class Install
     }
     
     /**
-     * Recursively retrieves all PHP files from a directory.
+     * Recursively retrieves all PHP files from the specified directory.
+     *
+     * @param string $directory The path to the directory to scan for PHP files.
+     * 
+     * @return array An array of file paths for all PHP files found in the directory.
      */
     private static function getPhpFilesFromDirectory(string $directory): array
     {
         $phpFiles = [];
-        $iterator = new RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
+        $iterator = new RecursiveIteratorIterator(new \RecursiveDirectoryIterator(directory: $directory));
         foreach ($iterator as $file) {
             if ($file->isFile() && $file->getExtension() === 'php') {
                 $phpFiles[] = $file->getPathname();
@@ -301,37 +337,39 @@ class Install
         return $phpFiles;
     }
     
-    public static function filterEnvList($env)
+    /**
+     * Filters the provided environment list for a array of values to search for.
+     *
+     * @param array $env The environment array to be filtered.
+     * @param array $result An optional associative array with default values for "log" and "db".
+     *                       Defaults to ["log" => "", "db" => ""].
+     * @return array The filtered environment list with the specified or default values.
+     */
+    public static function filterEnvList($env, $result = [ "log" => "", "db" => ""])
     {
         try {
 
-            $result = [
-                "logs" => null,
-                "db" => null
-            ];
+            foreach($result as $key => $val){
 
-            // $parse = function(string $haystack, string $kneedle){
+                $result[$key] = array_filter($env, function ($k) use ($key) {
 
-            //     return str_starts_with(strtolower($haystack), strtolower($kneedle));
-            // };
-
-            $result['logs'] = array_filter($env, function ($k) {
-
-                return str_starts_with(strtolower($k), strtolower("log"));
-            }, ARRAY_FILTER_USE_KEY);
-
-            $result['db'] = array_filter($env, function ($k) {
-
-                return str_starts_with(strtolower($k), strtolower("db"));
-            }, ARRAY_FILTER_USE_KEY);
-
-            return $result;
+                    return str_starts_with(strtolower($k), needle: strtolower($key));
+                }, ARRAY_FILTER_USE_KEY);
+            }
         } catch (Exception $e) {
 
             error('Error: ' . $e->__toString());
+        }finally{
+            return $result;
         }
     }
 
+    /**
+     * Retrieves the content of the specified environment file.
+     *
+     * @param string $filePath The path to the environment file.
+     * @return mixed The content of the environment file, or null if the file does not exist or cannot be read.
+     */
     public static function getEnvFile($filePath)
     {
         try {
@@ -367,6 +405,14 @@ class Install
         }
     }
 
+    /**
+     * Configures the database settings for the application.
+     *
+     * @param string $base_dir The base directory of the application.
+     * @param array $config An associative array containing database configuration settings.
+     *
+     * @return void
+     */
     public static function databaseConfiguration(string $base_dir, array $config)
     {
         intro('Database Configuration');
@@ -420,7 +466,5 @@ class Install
         echo "LOG DIR INSTALL SCRIPT RUNNING.\n";
 
     }
-
-
 }
 ?>
