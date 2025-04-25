@@ -250,17 +250,30 @@ class Install
                 $base_dir . "/application/config/config.php", // CodeIgniter
                 $base_dir . "/config/app.php", // Laravel
                 $base_dir . "/config/packages", // Symfony
+                
+                $base_dir . "/config_test_codeigniter",
+                $base_dir . "/config_test_laravel",
+                $base_dir . "/config_test_symfony",
             ];
+
+            var_dump($possiblePaths);
 
             foreach ($possiblePaths as $path) {
                 if (is_file($path)) {
                     $config_path = $path;
                     break;
                 } elseif (is_dir($path)) {
+
+                    var_dump($path);
+
                     // Parse all PHP files in the directory and subdirectories
                     $phpFiles = self::getPhpFilesFromDirectory($path);
+
+                    var_dump($phpFiles);
+
                     foreach ($phpFiles as $phpFile) {
                         $fileConfig = include $phpFile;
+                        echo $phpFile;
                         if (!is_array($fileConfig)) {
                             throw new Exception("PHP configuration file must return an array: " . $phpFile);
                         }
@@ -275,28 +288,35 @@ class Install
 
             if (!$config && $config_path) {
                 if (str_ends_with($config_path, '.json')) {
+
                     $env = json_decode(file_get_contents($config_path), true, 5, JSON_OBJECT_AS_ARRAY);
                     $config = self::filterEnvList($env);
                     $config['CONFIG_TYPE'] = "json";
                 } elseif (str_ends_with($config_path, '.env')) {
+
                     $env = self::getEnvFile($config_path);
                     $config = self::filterEnvList($env);
                     $config['CONFIG_TYPE'] = "env";
                 } elseif (str_ends_with($config_path, 'config.php')) {
+
                     // CodeIgniter config.php
                     $env = include $config_path;
                     $config = self::filterEnvList($env);
                     $config['CONFIG_TYPE'] = "codeigniter";
                 } elseif (str_ends_with($config_path, 'app.php')) {
+
                     // Laravel app.php
                     $env = include $config_path;
                     $config = self::filterEnvList($env);
                     $config['CONFIG_TYPE'] = "laravel";
                 } elseif (str_contains($config_path, 'packages')) {
+                    
                     // Symfony config/packages
                     $phpFiles = self::getPhpFilesFromDirectory($config_path);
+                    
                     foreach ($phpFiles as $phpFile) {
                         $fileConfig = include $phpFile;
+                        var_dump($fileConfig);
                         if (!is_array($fileConfig)) {
                             throw new Exception("Symfony configuration file must return an array: " . $phpFile);
                         }
