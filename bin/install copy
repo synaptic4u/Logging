@@ -55,16 +55,20 @@ echo "BASE DIR: USE".$base_dir_realpath.PHP_EOL;
 echo "BASE DIR: USING".$base_dir.PHP_EOL;
 
 // exit(1);
+try {
+    if (file_exists($base_dir . '/vendor/autoload.php')) {
 
-if (file_exists($base_dir . '/vendor/autoload.php')) {
+        require_once $base_dir . '/vendor/autoload.php';
+    } else {
+        $msg = 'EXITING: CANNOT AUTOLOAD! Please ensure that the Composer dependencies are installed by running "composer install" in the project directory.'
+        .PHP_EOL.'EXITING: CANNOT AUTOLOAD!';
 
-    require_once $base_dir . '/vendor/autoload.php';
+        throw new Exception($msg);
+    }
 
     Install::setup(base_dir: $base_dir);
-} else {
-    echo 'EXITING: CANNOT AUTOLOAD! Please ensure that the Composer dependencies are installed by running "composer install" in the project directory.';
-    echo ('EXITING: CANNOT AUTOLOAD!');
-    exit(1);
+} catch (Exception $e) {
+    exit($e->getMessage());
 }
 
 /**
@@ -126,7 +130,7 @@ class Install
                 name: 'LOG_DB'
             )
             ->pause()
-            ->submit();
+        ->submit();
 
         // Update the configuration with user responses
         $config['log']['LOG']['LOG_DIR_PATH'] = $responses['LOG_DIR_PATH'];
@@ -287,12 +291,12 @@ class Install
                     break;
                 } elseif (is_dir($path)) {
 
-                    var_dump($path);
+                    // var_dump($path);
 
                     // Parse all PHP files in the directory and subdirectories
                     $phpFiles = self::getPhpFilesFromDirectory($path);
 
-                    var_dump($phpFiles);
+                    // var_dump($phpFiles);
 
                     foreach ($phpFiles as $phpFile) {
                         $fileConfig = include $phpFile;
@@ -356,7 +360,9 @@ class Install
 
             return $config;
         } catch (Exception $e) {
-            error("Message: " . $e->getMessage() . "\nError: " . $e->__toString());
+            $msg  = "Message:\n" . $e->getMessage();
+            $msg .= (array_search("dev", $argv)) ? "\n\nError:\n" . $e->__toString() : "";
+            error($msg);
             exit;
         }
     }

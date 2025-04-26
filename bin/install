@@ -26,22 +26,9 @@ if (php_sapi_name() !== 'cli') {
     exit(1);
 }
 
-// TESTS: Check the actual directory path for pulling package from local repo clone,
-
-// echo(json_encode($argv, JSON_PRETTY_PRINT));
-// var_dump(json_encode(getenv(), JSON_PRETTY_PRINT));
-// $base_dir_realpath = realpath(__DIR__. '/../');
-// $base_dir_dirname = dirname(__DIR__, 1);
-// $base_dir_OLDPWD = getenv("OLDPWD");
-// $base_dir_getcwd = getcwd();
-// echo "BASE DIR realpath: ".$base_dir_realpath.PHP_EOL.PHP_EOL;
-// echo "BASE DIR dirname: ".$base_dir_dirname.PHP_EOL.PHP_EOL;
-// echo "BASE DIR OLDPWD: ".$base_dir_OLDPWD.PHP_EOL.PHP_EOL;
-// echo "BASE DIR getcwd: ".$base_dir_getcwd.PHP_EOL.PHP_EOL;
-
 // DEV OPTION MUST BE SET TO FALSE FOR NOT USING repositories IN COMPOSER.JSON
 $dev = (array_search("dev", $argv)) ? true : false;
-echo "DEV OPTION FROM CLI: ".($dev == true ? "true":"false").PHP_EOL;
+// echo "DEV OPTION FROM CLI: ".($dev == true ? "true":"false").PHP_EOL;
 
 // DEV REPO
 $base_dir_PWD = getenv("PWD");
@@ -50,8 +37,8 @@ $base_dir_realpath = realpath(__DIR__ . '/../');
 
 $base_dir = $dev ? $base_dir_PWD : $base_dir_realpath;
 
-echo "BASE DIR PWD: ".$base_dir_PWD.PHP_EOL;
-echo "BASE DIR: USE".$base_dir_realpath.PHP_EOL;
+// echo "BASE DIR PWD: ".$base_dir_PWD.PHP_EOL;
+// echo "BASE DIR: USE".$base_dir_realpath.PHP_EOL;
 echo "BASE DIR: USING".$base_dir.PHP_EOL;
 
 // exit(1);
@@ -60,8 +47,8 @@ try {
 
         require_once $base_dir . '/vendor/autoload.php';
     } else {
-        $msg = 'EXITING: CANNOT AUTOLOAD! Please ensure that the Composer dependencies are installed by running "composer install" in the project directory.'
-        .PHP_EOL.'EXITING: CANNOT AUTOLOAD!';
+        $msg = 'EXITING: CANNOT AUTOLOAD!'.PHP_EOL
+        .'Please ensure that the Composer dependencies are installed by running "composer install" in the project directory.';
 
         throw new Exception($msg);
     }
