@@ -28,18 +28,17 @@ if (php_sapi_name() !== 'cli') {
 
 // DEV OPTION MUST BE SET TO FALSE FOR NOT USING repositories IN COMPOSER.JSON
 $dev = (array_search("dev", $argv)) ? true : false;
-// echo "DEV OPTION FROM CLI: ".($dev == true ? "true":"false").PHP_EOL;
 
-// DEV REPO
-$base_dir_PWD = getenv("PWD");
-// PACKAGIST install
-$base_dir_realpath = realpath(__DIR__ . '/../');
+// DEV REPO or PACKAGIST install
+$base_dir = $dev ? getenv("PWD") : realpath(__DIR__ . '/../');
 
-$base_dir = $dev ? $base_dir_PWD : $base_dir_realpath;
+if($dev == "true"){
 
-// echo "BASE DIR PWD: ".$base_dir_PWD.PHP_EOL;
-// echo "BASE DIR: USE".$base_dir_realpath.PHP_EOL;
-echo "BASE DIR: USING".$base_dir.PHP_EOL;
+    echo "DEV OPTION FROM CLI: ".($dev == true ? "true":"false").PHP_EOL;
+    echo "BASE DIR PWD: ".getenv("PWD").PHP_EOL;
+    echo "BASE DIR: REALPATH".realpath(__DIR__ . '/../').PHP_EOL;
+    echo "BASE DIR: USING".$base_dir.PHP_EOL;
+}
 
 // exit(1);
 try {
@@ -202,6 +201,7 @@ class Install
      */
     public static function createLogsDirectory(string $logDir)
     {
+        var_dump($logDir);
         if (!mkdir($logDir, 0775, true) && !is_dir($logDir)) {
             throw new Exception("Failed to create logs directory: $logDir");
         }
@@ -260,10 +260,10 @@ class Install
             $possiblePaths = [
                 $base_dir . "/configNested.json",
                 $base_dir . "/.env",
-                $base_dir . "/app/config",
+                $base_dir . "/app/config", // CodeIgniter
                 $base_dir . "/config",
-                $base_dir . "/application/config/config.php", // CodeIgniter
-                $base_dir . "/config/app.php", // Laravel
+                $base_dir . "/application/config", // CodeIgniter
+                $base_dir . "/config", // Laravel
                 $base_dir . "/config/packages", // Symfony
                 
                 $base_dir . "/config_test_codeigniter",

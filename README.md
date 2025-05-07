@@ -43,6 +43,14 @@ composer install syaptic4u/logging
 composer dump-autoload -o
 
 composer exec install
+
+
 ```
 Then follow the prompts.
 
+From a local repo use:
+```ash
+
+composer exec install dev
+
+```
